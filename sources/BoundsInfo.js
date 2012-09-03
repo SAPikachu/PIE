@@ -22,12 +22,13 @@ PIE.BoundsInfo.prototype = {
         return !last || ( ( bounds = this.getBounds() ) && ( last.w !== bounds.w || last.h !== bounds.h ) );
     },
 
-    getLiveBounds: function() {
-        var el = this.targetElement,
+    _getLiveBoundsImpl: function(target) {
+        var el = target || this.targetElement,
             rect = el.getBoundingClientRect(),
             isIE9 = PIE.ieDocMode === 9,
             isIE7 = PIE.ieVersion === 7,
             width = rect.right - rect.left;
+
         return {
             x: rect.left,
             y: rect.top,
@@ -39,6 +40,40 @@ PIE.BoundsInfo.prototype = {
             h: isIE9 || isIE7 ? el.offsetHeight : rect.bottom - rect.top,
             logicalZoomRatio: ( isIE7 && width ) ? el.offsetWidth / width : 1
         };
+    },
+
+    getLiveBounds: function() {
+        var bounds = this._getLiveBoundsImpl();
+
+        var clippingEl = el.parentNode;
+        while (clippingEl.nodeName.toUpperCase() !== "BODY") {
+            if (clippingEl.currentStyle.getAttribute("overflow") === "hidden") {
+                var clippingBounds = this._getLiveBoundsImpl(clippingEl);
+                if (bounds.x < clippingBounds.x) {
+                    bounds.w -= clippingBounds.x - bounds.x;
+                    bounds.x = clippingBounds.x;
+                }
+                if (bounds.y < clippingBounds.y) {
+                    bounds.h -= clippingBounds.y - bounds.y;
+                    bounds.y = clippingBounds.y;
+                }
+                bounds.w = Math.max(0, 
+                    Math.min(
+                        bounds.w, 
+                        clippingBounds.w - (bounds.x - clippingBounds.x)
+                    )
+                );
+                bounds.h = Math.max(0,
+                    Math.min(
+                        bounds.h,
+                        clippingBounds.h - (bounds.y - clippingBounds.y)
+                    )
+                );
+            }
+            clippingEl = clippingEl.parentNode;
+        }
+
+        return bounds;
     },
 
     getBounds: function() {
