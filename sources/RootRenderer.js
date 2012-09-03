@@ -60,6 +60,7 @@ PIE.RootRenderer = PIE.RendererBase.newRenderer( {
             s.position = boxPos;
             s.left = x;
             s.top = y;
+            s.clip = this.boundsInfo.getClipString();
             s.zIndex = tgtPos === 'static' ? -1 : tgtCS.zIndex;
             this.isPositioned = true;
         }

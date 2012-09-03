@@ -43,37 +43,55 @@ PIE.BoundsInfo.prototype = {
     },
 
     getLiveBounds: function() {
-        var bounds = this._getLiveBoundsImpl();
+        return this._getLiveBoundsImpl();
+    },
+
+    getClipString: function() {
+        var bounds = null;
 
         var clippingEl = el.parentNode;
         while (clippingEl.nodeName.toUpperCase() !== "BODY") {
             if (clippingEl.currentStyle.getAttribute("overflow") === "hidden") {
-                var clippingBounds = this._getLiveBoundsImpl(clippingEl);
-                if (bounds.x < clippingBounds.x) {
-                    bounds.w -= clippingBounds.x - bounds.x;
-                    bounds.x = clippingBounds.x;
+                var clippingElBounds = this._getLiveBoundsImpl(clippingEl);
+                if (!bounds) {
+                    bounds = clippingElBounds;
+                    continue;
                 }
-                if (bounds.y < clippingBounds.y) {
-                    bounds.h -= clippingBounds.y - bounds.y;
-                    bounds.y = clippingBounds.y;
+
+                if (bounds.x < clippingElBounds.x) {
+                    bounds.w -= clippingElBounds.x - bounds.x;
+                    bounds.x = clippingElBounds.x;
+                }
+                if (bounds.y < clippingElBounds.y) {
+                    bounds.h -= clippingElBounds.y - bounds.y;
+                    bounds.y = clippingElBounds.y;
                 }
                 bounds.w = Math.max(0, 
                     Math.min(
                         bounds.w, 
-                        clippingBounds.w - (bounds.x - clippingBounds.x)
+                        clippingElBounds.w - (bounds.x - clippingElBounds.x)
                     )
                 );
                 bounds.h = Math.max(0,
                     Math.min(
                         bounds.h,
-                        clippingBounds.h - (bounds.y - clippingBounds.y)
+                        clippingElBounds.h - (bounds.y - clippingElBounds.y)
                     )
                 );
             }
             clippingEl = clippingEl.parentNode;
         }
 
-        return bounds;
+        if (!bounds) {
+            return "";
+        }
+
+        var elementBounds = this._getLiveBoundsImpl();
+        return "rect(" + 
+            ((bounds.y - elementBounds.y) * bounds.logicalZoomRatio) + "px, " +
+            ((bounds.x + bounds.w - elementBounds.x) * bounds.logicalZoomRatio) + "px, " +
+            ((bounds.y + bounds.h - elementBounds.y) * bounds.logicalZoomRatio) + "px, " +
+            ((bounds.x - elementBounds.x) * bounds.logicalZoomRatio) + "px)";
     },
 
     getBounds: function() {
