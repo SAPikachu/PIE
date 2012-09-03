@@ -14,6 +14,7 @@ PIE.Element = (function() {
         classNameRegExes = {},
         dummyArray = [];
 
+    var oldWindowSize;
 
     function addClass( el, className ) {
         el.className += ' ' + className;
@@ -211,7 +212,6 @@ PIE.Element = (function() {
                     w: docEl.clientWidth,
                     h: docEl.clientHeight
                 };
-                var oldWindowSize = this._oldWindowSize;
                 var force = false;
                 if (oldWindowSize && 
                     (oldWindowSize.w !== windowSize.w || 
@@ -219,7 +219,7 @@ PIE.Element = (function() {
 
                     force = true;
                 }
-                this._oldWindowSize = windowSize;
+                oldWindowSize = windowSize;
                 update(force);
             }
         }
