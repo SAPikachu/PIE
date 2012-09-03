@@ -206,10 +206,23 @@ PIE.Element = (function() {
          */
         function handleMoveOrResize() {
             if( boundsInfo && boundsInfo.hasBeenQueried() ) {
-                update();
+                var docEl = doc.documentElement || doc.body;
+                var windowSize = {
+                    w: docEl.clientWidth,
+                    h: docEl.clientHeight
+                };
+                var oldWindowSize = this._oldWindowSize;
+                var force = false;
+                if (oldWindowSize && 
+                    (oldWindowSize.w !== windowSize.w || 
+                     oldWindowSize.h !== windowSize.h)) {
+
+                    force = true;
+                }
+                this._oldWindowSize = windowSize;
+                update(force);
             }
         }
-
 
         /**
          * Update position and/or size as necessary. Both move and resize events call
