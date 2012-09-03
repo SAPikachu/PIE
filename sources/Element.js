@@ -6,6 +6,8 @@ PIE.Element = (function() {
         pollCssProp = PIE.CSS_PREFIX + 'poll',
         trackActiveCssProp = PIE.CSS_PREFIX + 'track-active',
         trackHoverCssProp = PIE.CSS_PREFIX + 'track-hover',
+        overflowFixCssProp = PIE.CSS_PREFIX + 'overflow-fix',
+        forceUpdateOnWindowResizeCssProp = PIE.CSS_PREFIX + 'force-update-on-window-resize',
         hoverClass = PIE.CLASS_PREFIX + 'hover',
         activeClass = PIE.CLASS_PREFIX + 'active',
         focusClass = PIE.CLASS_PREFIX + 'focus',
@@ -14,7 +16,7 @@ PIE.Element = (function() {
         classNameRegExes = {},
         dummyArray = [];
 
-    var oldWindowSize;
+    var oldWindowSize, forceUpdateOnWindowResize;
 
     function addClass( el, className ) {
         el.className += ' ' + className;
@@ -80,6 +82,8 @@ PIE.Element = (function() {
                     trackHover = cs.getAttribute( trackHoverCssProp ) !== 'false',
                     childRenderers;
 
+                forceUpdateOnWindowResize = cs.getAttribute( forceUpdateOnWindowResizeCssProp ) === 'true';
+
                 // Polling for size/position changes: default to on in IE8, off otherwise, overridable by -pie-poll
                 poll = cs.getAttribute( pollCssProp );
                 poll = ieDocMode > 7 ? poll !== 'false' : poll === 'true';
@@ -141,6 +145,7 @@ PIE.Element = (function() {
                             styleInfos.visibilityInfo
                         ];
                         rootRenderer = new PIE.RootRenderer( el, boundsInfo, styleInfos );
+                        rootRenderer.overflowFix = cs.getAttribute( overflowFixCssProp ) === 'true';
                         childRenderers = [
                             new PIE.BoxShadowOutsetRenderer( el, boundsInfo, styleInfos, rootRenderer ),
                             new PIE.BackgroundRenderer( el, boundsInfo, styleInfos, rootRenderer ),
@@ -207,19 +212,21 @@ PIE.Element = (function() {
          */
         function handleMoveOrResize() {
             if( boundsInfo && boundsInfo.hasBeenQueried() ) {
-                var docEl = doc.documentElement || doc.body;
-                var windowSize = {
-                    w: docEl.clientWidth,
-                    h: docEl.clientHeight
-                };
                 var force = false;
-                if (oldWindowSize && 
-                    (oldWindowSize.w !== windowSize.w || 
-                     oldWindowSize.h !== windowSize.h)) {
+                if (forceUpdateOnWindowResize) {
+                    var docEl = doc.documentElement || doc.body;
+                    var windowSize = {
+                        w: docEl.clientWidth,
+                        h: docEl.clientHeight
+                    };
+                    if (oldWindowSize && 
+                        (oldWindowSize.w !== windowSize.w || 
+                         oldWindowSize.h !== windowSize.h)) {
 
-                    force = true;
+                        force = true;
+                    }
+                    oldWindowSize = windowSize;
                 }
-                oldWindowSize = windowSize;
                 update(force);
             }
         }
