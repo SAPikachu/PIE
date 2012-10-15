@@ -6,6 +6,7 @@ PIE.Element = (function() {
         pollCssProp = PIE.CSS_PREFIX + 'poll',
         trackActiveCssProp = PIE.CSS_PREFIX + 'track-active',
         trackHoverCssProp = PIE.CSS_PREFIX + 'track-hover',
+        disableCssProp = PIE.CSS_PREFIX + 'disable',
         overflowFixCssProp = PIE.CSS_PREFIX + 'overflow-fix',
         forceUpdateOnWindowResizeCssProp = PIE.CSS_PREFIX + 'force-update-on-window-resize',
         hoverClass = PIE.CLASS_PREFIX + 'hover',
@@ -73,6 +74,11 @@ PIE.Element = (function() {
          */
         function init() {
             if( !initialized ) {
+                if (el.currentStyle.getAttribute( disableCssProp ) === 'true')
+                {
+                    initialized = true;
+                    return;
+                }
                 var docEl,
                     bounds,
                     ieDocMode = PIE.ieDocMode,
